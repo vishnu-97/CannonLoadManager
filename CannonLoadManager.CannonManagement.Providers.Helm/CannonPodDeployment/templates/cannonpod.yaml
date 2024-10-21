@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.RequestToken}}
+spec:
+  replicas: {{.Values.ReplicaCount}}
+  selector:
+    matchLabels:
+      app: {{.Values.RequestToken}} 
+  template:
+    metadata:
+      labels:
+        app: {{.Values.RequestToken}}
+    spec:
+      nodeSelector:
+        app: windows
+      containers:
+      - image: mds_cannon_v1102
+        imagePullPolicy: Always
+        name: cannonpod
+        ports:
+        - name: cannonpod
+          containerPort: 80
+

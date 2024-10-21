@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cannon-load-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cannon-load-manager
+  template:
+    metadata:
+      labels:
+        app: cannon-load-manager
+    spec:
+      nodeSelector:
+        app: linux
+      serviceAccountName: cannon-load-manager-account
+      containers:
+      - name: cannon-load-manager-container
+        image: jitenderp1234/automationapi:v51
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
