@@ -37,7 +37,7 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
             }
 
             // Deploy the 
-            string helmCommand = $"helm install {requestToken} {ConfigurationSettings.ChartName} --set ReplicaCount={cannonCount},ServicePort={ConfigurationSettings.ServicePort},RequestToken={requestToken}";
+            string helmCommand = $"helm install {requestToken} {ConfigurationSettings.ChartName} --set ReplicaCount={cannonCount},ServicePort={ConfigurationSettings.ServicePort},AppPort={ConfigurationSettings.CannonPort},RequestToken={requestToken}";
             var result = await Cli.Wrap("sh")
                 .WithArguments([ "-c", helmCommand ])
                 .ExecuteBufferedAsync();
@@ -82,12 +82,12 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
 
         public async Task<CannonManagerResponseDto> RemoveCannonServiceAsync(string requestToken)
         {
-            string helmCommand = $"helm uninstall {requestToken} ";
+            var helmCommand = $"helm uninstall {requestToken} ";
             var cannonResponse = new CannonManagerResponseDto();
 
             // Execute Helm command inside the pod
             var result = await Cli.Wrap("sh")
-                .WithArguments(new[] { "-c", helmCommand })
+                .WithArguments(["-c", helmCommand ])
                 .ExecuteBufferedAsync();
 
             if (result.ExitCode == 0)

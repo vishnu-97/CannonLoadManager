@@ -61,6 +61,7 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, message: ex.Message);
                 response.Success = false;
                 response.Message = ex.Message;
             }
@@ -120,7 +121,8 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
+
                 response.Success = false;
                 response.Message = ex.Message;
             }
@@ -147,13 +149,11 @@ namespace CannonLoadManager.API.Controllers
 
                 var startResponse = await _cannonCommunicator.CallCannonAsync(ApiRoutes.StartCall, HttpMethod.Put, CurrentRequestToken, startParams).ConfigureAwait(false);
                 
-                var results = JsonConvert.DeserializeObject<CannonResponseDto[]>(startResponse?.Message);
-                
                 response = CannonLoadMangerResponseDto.CreateResponse(startResponse);
             }
             catch(Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
                 response.Success = false;
                 response.Message = ex.Message;
             }
@@ -189,7 +189,7 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
                 response.Success = false;
                 response.Message = ex.Message;
             }
@@ -219,7 +219,7 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
                 var errorResp = new CannonLoadMangerResponseDto() { Message = ex.Message, Level = LogLevel.Error };
                 response.Add(errorResp);
             }
@@ -227,15 +227,15 @@ namespace CannonLoadManager.API.Controllers
         }
 
         [HttpDelete("RemoveAllDevices")]
-        public async Task<IEnumerable<CannonLoadMangerResponseDto>> RemoveAllDevices()
+        public async Task<IEnumerable<CannonResponseDto>> RemoveAllDevices()
         {
-            var response = new List<CannonLoadMangerResponseDto>();
+            var response = new List<CannonResponseDto>();
 
             try
             {
                 if (CurrentRequestToken == null)
                 {
-                    var errorResp = new CannonLoadMangerResponseDto() { Message = $"No Load tests running" };
+                    var errorResp = new CannonResponseDto(null) { Message = $"No Load tests running" };
                     response.Add(errorResp);
                     return response;
                 }
@@ -244,9 +244,11 @@ namespace CannonLoadManager.API.Controllers
 
                 var cannonResponse = await _cannonManager.RemoveCannonServiceAsync(CurrentRequestToken).ConfigureAwait(false);
 
+                var result = JsonConvert.DeserializeObject<CannonResponseDto[][]>(stopResponse.Message)?.SelectMany(o => o);
+
                 if (!cannonResponse.Success)
                 {
-                    var errorResp = new CannonLoadMangerResponseDto() { Message = cannonResponse.Message };
+                    var errorResp = new CannonResponseDto(null) { Message = cannonResponse.Message };
                     response.Add(errorResp);
                     return response;
                 }
@@ -256,12 +258,12 @@ namespace CannonLoadManager.API.Controllers
                     CurrentRequestToken = null;
                 }
 
-                response.Add(CannonLoadMangerResponseDto.CreateResponse(stopResponse));
+                return result ?? response;
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response 85360341
-                var errorResp = new CannonLoadMangerResponseDto() { Message = ex.Message, Level = LogLevel.Error };
+                _logger.LogError(ex, message: ex.Message); 
+                var errorResp = new CannonResponseDto(null) { Message = ex.Message };
                 response.Add(errorResp);
             }
             return response;
@@ -287,7 +289,7 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
                 throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
             }
         }
@@ -313,7 +315,7 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
                 throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
             }
 
@@ -338,7 +340,7 @@ namespace CannonLoadManager.API.Controllers
             }
             catch (Exception ex)
             {
-                //Add Logs for detailed response
+                _logger.LogError(ex, message: ex.Message);
                 throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
             }
         }

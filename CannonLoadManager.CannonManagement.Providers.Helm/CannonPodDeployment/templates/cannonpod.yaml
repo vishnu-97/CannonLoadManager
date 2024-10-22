@@ -20,5 +20,5 @@ spec:
         name: cannonpod
         ports:
         - name: cannonpod
-          containerPort: 80
+          containerPort: {{.Values.AppPort}}
 

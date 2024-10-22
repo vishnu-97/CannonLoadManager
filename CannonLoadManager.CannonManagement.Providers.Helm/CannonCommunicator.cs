@@ -6,16 +6,19 @@ using CannonLoadManager.Contracts.Configurations;
 using Newtonsoft.Json;
 using System.Text;
 using System.Data;
+using Microsoft.Extensions.Logging;
 
 namespace CannonLoadManager.CannonManagement.Providers.Helm
 {
     public class CannonCommunicator : ICannonCommunicator
     {
         private readonly ICannonManager _cannonManager;
+        private readonly ILogger _logger;
 
-        public CannonCommunicator(ICannonManager cannonManager)
+        public CannonCommunicator(ICannonManager cannonManager, ILogger<CannonCommunicator> logger)
         {
             _cannonManager = cannonManager;
+            _logger = logger;
         }
 
         public async Task<CannonManagerResponseDto> CreateCannonAsync(string apiRoute, HttpMethod apiMethod, string requestToken, int deviceCount, Device device, Dictionary<string, string>? headers = null)
@@ -90,6 +93,8 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, message: ex.Message);
+
                 finalResponse.Message = ex.Message;
             }
             return finalResponse;
