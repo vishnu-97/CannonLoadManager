@@ -12,6 +12,7 @@ namespace CannonLoadManager.API
 
             builder.Configuration.GetSection(nameof(ConfigurationSettings)).Bind(new ConfigurationSettings());//TODO: Setup validation of config
             // Add services to the container.
+            Console.WriteLine($"MaxValue:{ ConfigurationSettings.MaxAllowedLoadTests }");
             builder.Services.AddSingleton<ICannonManager, CannonManager>();
             builder.Services.AddSingleton<ICannonCommunicator, CannonCommunicator>();
             builder.Services.AddControllers();
@@ -21,12 +22,9 @@ namespace CannonLoadManager.API
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            // Configure the HTTP request pipeline.           
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 

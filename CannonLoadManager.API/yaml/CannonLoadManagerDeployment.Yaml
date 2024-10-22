@@ -13,11 +13,10 @@ spec:
         app: cannon-load-manager
     spec:
       nodeSelector:
-        app: linux
-      serviceAccountName: cannon-load-manager-account
+      serviceAccountName: automation-service-account
       containers:
       - name: cannon-load-manager-container
-        image: jitenderp1234/automationapi:v51
+        image: jitenderp1234/cannonloadmanager:v11
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

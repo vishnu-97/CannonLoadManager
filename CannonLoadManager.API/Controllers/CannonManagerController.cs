@@ -4,15 +4,13 @@ using CannonLoadManager.Contracts.Interfaces;
 using CannonLoadManager.Contracts.Models.Domains;
 using CannonLoadManager.Contracts.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System;
-using System.Threading.Tasks;
-using CannonLoadManager.CannonManagement.Providers.Helm;
+using Newtonsoft.Json;
+using CannonLoadManager.Contracts.Enums;
 
 namespace CannonLoadManager.API.Controllers
 {
     [ApiController]
-    [Route("api/{Controller}")]
+    [Route("api/CannonManager")]
     public class CannonManagerController : ControllerBase
     {
         private readonly ILogger<CannonManagerController> _logger;
@@ -148,7 +146,9 @@ namespace CannonLoadManager.API.Controllers
                 };
 
                 var startResponse = await _cannonCommunicator.CallCannonAsync(ApiRoutes.StartCall, HttpMethod.Put, CurrentRequestToken, startParams).ConfigureAwait(false);
-
+                
+                var results = JsonConvert.DeserializeObject<CannonResponseDto[]>(startResponse?.Message);
+                
                 response = CannonLoadMangerResponseDto.CreateResponse(startResponse);
             }
             catch(Exception ex)
@@ -270,17 +270,78 @@ namespace CannonLoadManager.API.Controllers
 
         //#region Get Device Reports
 
-        //[HttpGet("GetDeviceStats")]
-        //public IEnumerable<MdsDeviceStatsDto> GetDeviceStats()
-        //{
+        [HttpGet("GetDeviceStats")]
+        public async Task<IEnumerable<DeviceStatsDto>> GetDeviceStats()
+        {
+            var response = new List<DeviceStatsDto>();
+            if (CurrentRequestToken == null)
+            {
+                throw new BadHttpRequestException("No Load tests running");
+            }
 
-        //}
+            try
+            {
+                var statsResponse = await _cannonCommunicator.CallCannonAsync(ApiRoutes.DeviceStatsCall, HttpMethod.Get, CurrentRequestToken, null).ConfigureAwait(false);
 
-        //[HttpGet("GetDeviceStats/{deviceResult}")]
-        //public IEnumerable<MdsDeviceStatsDto> GetDeviceStats(DeviceResult deviceResult) => _PerfomanceDevices.GetDeviceStats(deviceResult);
+                return JsonConvert.DeserializeObject<DeviceStatsDto[][]>(statsResponse.Message)?.SelectMany(o => o) ?? response;
+            }
+            catch (Exception ex)
+            {
+                //Add Logs for detailed response
+                throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
+            }
+        }
 
-        //[HttpGet("GetDeviceResults")]
-        //public DeviceStateRecord GetDeviceStates() => _PerfomanceDevices.GetDeviceStates();
+        [HttpGet("GetDeviceStats/{deviceResult}")]
+        public async Task<IEnumerable<DeviceStatsDto>> GetDeviceStats(DeviceResult deviceResult)
+        {
+            var response = new List<DeviceStatsDto>();
+            if (CurrentRequestToken == null)
+            {
+                throw new BadHttpRequestException("No Load tests running");
+            }
+
+            try
+            {
+                var parameters = new Dictionary<string, string>
+                {
+                    {nameof(deviceResult), deviceResult.ToString() }
+                };
+                var statsResponse = await _cannonCommunicator.CallCannonAsync(ApiRoutes.DeviceResultStatsCall, HttpMethod.Get, CurrentRequestToken, parameters).ConfigureAwait(false);
+
+                return JsonConvert.DeserializeObject<DeviceStatsDto[][]>(statsResponse.Message)?.SelectMany(o => o) ?? response;
+            }
+            catch (Exception ex)
+            {
+                //Add Logs for detailed response
+                throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
+            }
+
+        }
+
+        [HttpGet("GetDeviceResults")]
+        public async Task<DeviceStateRecord> GetDeviceStates()
+        {
+            var response = new DeviceStateRecord();
+            if (CurrentRequestToken == null)
+            {
+                throw new BadHttpRequestException("No Load tests running");
+            }
+
+            try
+            {
+                var stateResponse = await _cannonCommunicator.CallCannonAsync(ApiRoutes.StatesCall, HttpMethod.Get, CurrentRequestToken, null).ConfigureAwait(false);
+                var results = JsonConvert.DeserializeObject<DeviceStateRecord[]>(stateResponse.Message);
+                if (results.Length <= 0) return response;
+
+                return DeviceStateRecord.Combine(results);
+            }
+            catch (Exception ex)
+            {
+                //Add Logs for detailed response
+                throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
+            }
+        }
 
         //[HttpGet("GetFullReport")]
         //public object GetFullReport() => _PerfomanceDevices.GetFullReport();

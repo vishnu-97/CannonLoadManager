@@ -8,22 +8,22 @@ using System.Text.RegularExpressions;
 
 namespace CannonLoadManager.CannonManagement.Providers.Helm
 {
-    public class CannonManager: ICannonManager
+    public class CannonManager : ICannonManager
     {
         public async Task<CannonManagerResponseDto> CreateAsync(string requestToken, int cannonCount)
         {
             var cannonResponse = new CannonManagerResponseDto();
-            
+
             //bring in the current list of deployments
-            string helmlistCount = "kubectl get deployments --no-headers | wc -l";
-            var helmlistcountoutput = await Cli.Wrap("sh")
-                .WithArguments(new[] { "-c", helmlistCount })
-                .ExecuteBufferedAsync();
-            if (Convert.ToInt32(helmlistcountoutput.StandardOutput) >= ConfigurationSettings.MaxAllowedLoadTests)
-            {
-                cannonResponse.Message = "Maximum number Loadtests already deployed";
-                return cannonResponse;
-            }
+            //string helmlistCount = "kubectl get deployments --no-headers | wc -l";
+            //var helmlistcountoutput = await Cli.Wrap("sh")
+            //    .WithArguments(new[] { "-c", helmlistCount })
+            //    .ExecuteBufferedAsync();
+            //if (Convert.ToInt32(helmlistcountoutput.StandardOutput) >= ConfigurationSettings.MaxAllowedLoadTests)
+            //{
+            //    cannonResponse.Message = "Maximum number Loadtests already deployed";
+            //    return cannonResponse;
+            //}
 
             //Check whether the currect deplyment already exists
             string helmlistCommand = "helm list --all";
@@ -39,7 +39,7 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
             // Deploy the 
             string helmCommand = $"helm install {requestToken} {ConfigurationSettings.ChartName} --set ReplicaCount={cannonCount},ServicePort={ConfigurationSettings.ServicePort},RequestToken={requestToken}";
             var result = await Cli.Wrap("sh")
-                .WithArguments(new[] { "-c", helmCommand })
+                .WithArguments([ "-c", helmCommand ])
                 .ExecuteBufferedAsync();
 
             if (result.ExitCode == 0)

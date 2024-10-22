@@ -4,12 +4,7 @@ using CannonLoadManager.Contracts.Models.Domains;
 using CannonLoadManager.Contracts.Models.DTOs;
 using CannonLoadManager.Contracts.Configurations;
 using Newtonsoft.Json;
-using System;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Reflection.PortableExecutable;
 using System.Text;
-using System.Web;
 using System.Data;
 
 namespace CannonLoadManager.CannonManagement.Providers.Helm
@@ -38,7 +33,7 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
                 {"deviceCount", deviceCount.ToString() }
             };
             foreach (string ipAddress in cannonManagerResponse.CannonAddresses)
-            {               
+            {
                 device.SerialNumber = serialNumber.ToString();
                 allTasks.Add(SendApiAsync(ipAddress, apiRoute, apiMethod, createParams, device, headers));
                 serialNumber += deviceCount;

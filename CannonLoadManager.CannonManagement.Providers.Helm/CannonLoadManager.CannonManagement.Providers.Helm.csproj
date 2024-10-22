@@ -7,6 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="CannonPodDeployment\Chart.yaml" />
+    <None Remove="CannonPodDeployment\templates\cannonpod-service.yaml" />
+    <None Remove="CannonPodDeployment\templates\cannonpod.yaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CannonPodDeployment\Chart.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CannonPodDeployment\templates\cannonpod-service.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CannonPodDeployment\templates\cannonpod.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

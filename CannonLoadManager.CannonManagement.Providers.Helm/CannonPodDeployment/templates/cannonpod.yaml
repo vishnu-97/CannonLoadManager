@@ -15,7 +15,7 @@ spec:
       nodeSelector:
         app: windows
       containers:
-      - image: mds_cannon_v1102
+      - image: sajalgupta1988/mdscanon
         imagePullPolicy: Always
         name: cannonpod
         ports:

@@ -15,7 +15,7 @@
         public const string RemoveCall = "RemoveAllDevices";
         public const string DeviceStatsCall = "GetDeviceStats";
         public const string DeviceResultStatsCall = "GetDeviceStats/{deviceResult}";
-        public const string GetDeviceResultsCall = "GetDeviceResults";
+        public const string StatesCall = "GetDeviceResults";
         public const string ReportCall = "GetFullReport";
         public const string StatusCall = "CheckDeviceTimers/{deviceResult}";
         public const string ToggleDelayCall = "ToggleDelay/{toggleValue}";
