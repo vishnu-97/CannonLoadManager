@@ -103,6 +103,34 @@ namespace CannonLoadManager.API.Controllers
                     return response;
                 }
 
+                var cannonManagerResponse = new CannonManagerResponseDto();
+                var attempt = 0;
+                while (true)
+                {
+                    await Task.Delay(20000).ConfigureAwait(false);
+                    attempt++;
+                    cannonManagerResponse = await _cannonManager.GetCannonAddressesAsync(requestToken).ConfigureAwait(false);
+
+                    if (cannonManagerResponse.CannonAddresses.Length < totalCannons && attempt < 3)
+                    {
+                        continue;
+                    }
+                    else if (cannonManagerResponse.CannonAddresses.Length == totalCannons)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        response.Success = false;
+                        response.Message = $"Could not determine Cannon Addresses in given time:{60} seconds";
+
+                        _logger.LogError(response.Message);
+
+                        await RemoveAllDevices();
+                        return response;
+                    }
+                }
+
                 var libraryParams = new Dictionary<string, string>
                 {
                     {"libraryFile", Library.ToString() }
@@ -122,9 +150,9 @@ namespace CannonLoadManager.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, message: ex.Message);
-
                 response.Success = false;
                 response.Message = ex.Message;
+                Reset();
             }
             return response;
         }
@@ -334,7 +362,7 @@ namespace CannonLoadManager.API.Controllers
             {
                 var stateResponse = await _cannonCommunicator.CallCannonAsync(ApiRoutes.StatesCall, HttpMethod.Get, CurrentRequestToken, null).ConfigureAwait(false);
                 var results = JsonConvert.DeserializeObject<DeviceStateRecord[]>(stateResponse.Message);
-                if (results.Length <= 0) return response;
+                if (results == null || results.Length <= 0) return response;
 
                 return DeviceStateRecord.Combine(results);
             }
@@ -377,12 +405,28 @@ namespace CannonLoadManager.API.Controllers
 
         //[HttpPut("SetReconnect/{reconnectString}")]
         //public MdsHarnessResponseDto SetReconnectString(string reconnectString) => _PerfomanceDevices.SetReconnectString(reconnectString);
-
+        [HttpPost("Reset")]
+        public CannonLoadMangerResponseDto Reset()
+        {
+            var response = new CannonLoadMangerResponseDto { Success = true };
+            
+            try
+            {
+                LoadTests = [];
+                CurrentRequestToken = null;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, message: ex.Message);
+                throw new HttpRequestException(ex.Message, ex, System.Net.HttpStatusCode.InternalServerError);
+            }
+        }
         private string CreateRequestToken()
         {
             while (true)
             {
-                var requestToken = Guid.NewGuid().ToString();
+                var requestToken = $"loadtest-{LoadTests.Count}";
                 if (!LoadTests.Contains(requestToken))
                 {
                     LoadTests.Add(requestToken);

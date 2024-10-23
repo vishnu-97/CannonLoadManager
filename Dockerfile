@@ -26,14 +26,15 @@ rm get_helm.sh
 # Install dnsutils for nslookup
 RUN apt-get update && apt-get install -y dnsutils
 
-
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["CannonLoadManager.API.csproj", "."]
-RUN dotnet restore "./././CannonLoadManager.API.csproj"
+COPY ["CannonLoadManager.API/CannonLoadManager.API.csproj", "CannonLoadManager.API/"]
+COPY ["CannonLoadManager.CannonManagement.Providers.Helm/CannonLoadManager.CannonManagement.Providers.Helm.csproj", "CannonLoadManager.CannonManagement.Providers.Helm/"]
+COPY ["CannonLoadManager.Contracts/CannonLoadManager.Contracts.csproj", "CannonLoadManager.Contracts/"]
+RUN dotnet restore "./CannonLoadManager.API/./CannonLoadManager.API.csproj"
 COPY . .
-WORKDIR "/src/."
+WORKDIR "/src/CannonLoadManager.API"
 RUN dotnet build "./CannonLoadManager.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

@@ -52,6 +52,7 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
         public async Task<CannonManagerResponseDto> CallCannonAsync(string apiRoute, HttpMethod apiMethod, string requestToken, Dictionary<string, string> parameters, object? body = null, Dictionary<string, string>? headers = null)
         {
             var cannonManagerResponse = await _cannonManager.GetCannonAddressesAsync(requestToken).ConfigureAwait(false);
+            
             if (!cannonManagerResponse.Success)
                 return cannonManagerResponse;
 
@@ -84,11 +85,11 @@ namespace CannonLoadManager.CannonManagement.Providers.Helm
 
                 if (body != null)
                     request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+                
                 var response = await client.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                     finalResponse.Success = true;
-
                 finalResponse.Message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
